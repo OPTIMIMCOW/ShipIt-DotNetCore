@@ -5,6 +5,7 @@ using System.Linq;
 using Npgsql;
 using ShipIt.Exceptions;
 using ShipIt.Models.DataModels;
+using ShipIt.Models.ApiModels;
 
 namespace ShipIt.Repositories
 {
@@ -16,6 +17,7 @@ namespace ShipIt.Repositories
         ProductDataModel GetProductById(int id);
         void AddProducts(IEnumerable<ProductDataModel> products);
         void DiscontinueProductByGtin(string gtin);
+        double GetNumberOfTrucks(OutboundOrderRequestModel request, Dictionary<string, Product> products);
     }
 
     public class ProductRepository : RepositoryBase, IProductRepository
@@ -43,9 +45,13 @@ namespace ShipIt.Repositories
             return base.RunGetQuery(sql, reader => new ProductDataModel(reader), "No products found with given gtin ids", null);
         }
 
+        // public IEnumerable<Product> GetAllProducts(List<int> ids){
+        //     string sql = String.Format("SELECT p_id, gtin_cd, gcp_cd, gtin_nm, m_g, l_th, ds, min_qt FROM gtin WHERE gtin_cd IN ('{0}')");
+        //     return base.RunGetQuery(sql, reader => new Product(reader), "No products found with given gtin ids", null);
+        // }
+
         public ProductDataModel GetProductById(int id)
         {
-
             string sql = "SELECT p_id, gtin_cd, gcp_cd, gtin_nm, m_g, l_th, ds, min_qt FROM gtin WHERE p_id = @p_id";
             var parameter = new NpgsqlParameter("@p_id", id);
             string noProductWithIdErrorMessage = string.Format("No products found with id of value {0}", id.ToString());
@@ -101,6 +107,20 @@ namespace ShipIt.Repositories
             {
                 return new List<ProductDataModel>();
             }
+        }
+
+        public double GetNumberOfTrucks(OutboundOrderRequestModel request, Dictionary<string, Product> products)
+        {
+           var totalWeightInKg = 0.0; 
+            foreach (var orderLine in request.OrderLines) 
+            {
+                var product = products[orderLine.gtin];
+                var productWeightInKg = product.Weight; 
+
+                totalWeightInKg += productWeightInKg * orderLine.quantity; 
+            }
+            var numberOfTrucks = Math.Ceiling(totalWeightInKg / 2000.0);  
+            return numberOfTrucks;
         }
     }
 }

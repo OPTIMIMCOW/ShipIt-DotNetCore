@@ -38,6 +38,13 @@ namespace ShipIt.Controllers
 
             var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
 
+            var productIds = new List<int>();
+            foreach (var stock in allStock)
+            {
+                productIds.Add(stock.ProductId);
+            }
+            // IEnumerable<Product> products = _productRepository.GetProductsByGtin(productIds);
+
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
             foreach (var stock in allStock)
             {

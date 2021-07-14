@@ -92,6 +92,9 @@ namespace ShipIt.Controllers
             {
                 throw new InsufficientStockException(string.Join("; ", errors));
             }
+            
+           var numberOfTrucks = _productRepository.GetNumberOfTrucks(request, products);
+            Log.Info(String.Format("Number of Trucks needed {0}", numberOfTrucks));
 
             _stockRepository.RemoveStock(request.WarehouseId, lineItems);
         }
