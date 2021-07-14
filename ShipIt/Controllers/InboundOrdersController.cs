@@ -38,17 +38,21 @@ namespace ShipIt.Controllers
 
             var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
 
-            var productIds = new List<int>();
+            var productIds = new List<string>();
             foreach (var stock in allStock)
             {
-                productIds.Add(stock.ProductId);
+                productIds.Add(stock.ProductId.ToString());
             }
-            // IEnumerable<Product> products = _productRepository.GetProductsByGtin(productIds);
-
+            IEnumerable<ProductDataModel> dataProducts = _productRepository.GetProductsById(productIds);
+            Dictionary<int,Product> products = new Dictionary<int, Product>();
+            foreach(var dataProduct in dataProducts){
+                products.Add(dataProduct.Id, new Product(dataProduct));
+            }
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
             foreach (var stock in allStock)
             {
-                Product product = new Product(_productRepository.GetProductById(stock.ProductId));
+                var product =  products[stock.ProductId];
+                // Product product = new Product(_productRepository.GetProductById(stock.ProductId));
                 if(stock.held < product.LowerThreshold && !product.Discontinued)
                 {
                     Company company = new Company(_companyRepository.GetCompany(product.Gcp));

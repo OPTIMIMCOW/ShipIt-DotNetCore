@@ -14,6 +14,7 @@ namespace ShipIt.Repositories
         int GetCount();
         ProductDataModel GetProductByGtin(string gtin);
         IEnumerable<ProductDataModel> GetProductsByGtin(List<string> gtins);
+        IEnumerable<ProductDataModel> GetProductsById(List<string> ids);
         ProductDataModel GetProductById(int id);
         void AddProducts(IEnumerable<ProductDataModel> products);
         void DiscontinueProductByGtin(string gtin);
@@ -39,16 +40,17 @@ namespace ShipIt.Repositories
 
         public IEnumerable<ProductDataModel> GetProductsByGtin(List<string> gtins)
         {
-
             string sql = String.Format("SELECT p_id, gtin_cd, gcp_cd, gtin_nm, m_g, l_th, ds, min_qt FROM gtin WHERE gtin_cd IN ('{0}')", 
                 String.Join("','", gtins));
             return base.RunGetQuery(sql, reader => new ProductDataModel(reader), "No products found with given gtin ids", null);
         }
 
-        // public IEnumerable<Product> GetAllProducts(List<int> ids){
-        //     string sql = String.Format("SELECT p_id, gtin_cd, gcp_cd, gtin_nm, m_g, l_th, ds, min_qt FROM gtin WHERE gtin_cd IN ('{0}')");
-        //     return base.RunGetQuery(sql, reader => new Product(reader), "No products found with given gtin ids", null);
-        // }
+        public IEnumerable<ProductDataModel> GetProductsById(List<string> ids)
+        {
+            string sql = String.Format("SELECT p_id, gtin_cd, gcp_cd, gtin_nm, m_g, l_th, ds, min_qt FROM gtin WHERE p_id IN ('{0}')", 
+                String.Join("','", ids));
+            return base.RunGetQuery(sql, reader => new ProductDataModel(reader), "No products found in gtin table", null);
+        }
 
         public ProductDataModel GetProductById(int id)
         {
