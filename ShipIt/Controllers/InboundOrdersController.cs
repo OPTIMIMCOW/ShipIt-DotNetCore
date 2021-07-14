@@ -43,7 +43,9 @@ namespace ShipIt.Controllers
             {
                 productIds.Add(stock.ProductId.ToString());
             }
+            var start = DateTime.Now;
             IEnumerable<ProductDataModel> dataProducts = _productRepository.GetProductsById(productIds);
+            
             Dictionary<int,Product> products = new Dictionary<int, Product>();
             foreach(var dataProduct in dataProducts){
                 products.Add(dataProduct.Id, new Product(dataProduct));
@@ -73,6 +75,9 @@ namespace ShipIt.Controllers
                         });
                 }
             }
+
+            var finish = DateTime.Now;
+            Console.WriteLine("Time taken to run GetProductsByID = {0}", finish-start);
 
             Log.Debug(String.Format("Constructed order lines: {0}", orderlinesByCompany));
 
