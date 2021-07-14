@@ -38,18 +38,32 @@ namespace ShipIt.Controllers
 
             var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
 
+
             var productIds = new List<string>();
             foreach (var stock in allStock)
             {
                 productIds.Add(stock.ProductId.ToString());
             }
-            var start = DateTime.Now;
-            IEnumerable<ProductDataModel> dataProducts = _productRepository.GetProductsById(productIds);
-            
-            Dictionary<int,Product> products = new Dictionary<int, Product>();
+            var dataProducts = _productRepository.GetProductsById(productIds);
+            var products = new Dictionary<int, Product>();
             foreach(var dataProduct in dataProducts){
                 products.Add(dataProduct.Id, new Product(dataProduct));
             }
+            // ABOVE IS GET PRODUCTS
+
+            // TODO get comapanies
+            var companiesGcp = new List<string>();
+            foreach(var product in products)
+            {
+                companiesGcp.Add(product.Value.Gcp);
+            }
+            var dataCompanies = _companyRepository.GetCompaniesByGcps(companiesGcp);
+            var companies = new Dictionary<string, Company>();
+            foreach(var company in dataCompanies)
+            {
+                companies.Add(company.Gcp, new Company(company));
+            }
+
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
             foreach (var stock in allStock)
             {
@@ -75,9 +89,9 @@ namespace ShipIt.Controllers
                         });
                 }
             }
-
-            var finish = DateTime.Now;
-            Console.WriteLine("Time taken to run GetProductsByID = {0}", finish-start);
+            // var start = DateTime.Now;
+            // var finish = DateTime.Now;
+            // Console.WriteLine("Time taken to run GetProductsByID = {0}", finish-start);
 
             Log.Debug(String.Format("Constructed order lines: {0}", orderlinesByCompany));
 
