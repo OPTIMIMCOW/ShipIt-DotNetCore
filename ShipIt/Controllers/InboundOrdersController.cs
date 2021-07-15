@@ -40,19 +40,10 @@ namespace ShipIt.Controllers
 
             var productDictionary = _productRepository.GetProductDictionary(allStock);
 
-            var companyGcp = new List<string>();
-            foreach(var product in productDictionary)
-            {
-                companyGcp.Add(product.Value.Gcp);
-            }
-            var companies = _companyRepository.GetCompaniesByGcp(companyGcp);
-            var companyDictionary = new Dictionary<string, Company>();
-            foreach( var company in companies)
-            {
-                companyDictionary.Add(company.Gcp, new Company(company));
-            }
-            
+            var companyDictionary = _companyRepository.GetCompanyDictionary(productDictionary);
+           
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
+            
             foreach (var stock in allStock)
             {
                 Product product = productDictionary[stock.ProductId];

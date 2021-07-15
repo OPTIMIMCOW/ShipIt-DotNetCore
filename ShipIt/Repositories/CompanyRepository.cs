@@ -15,6 +15,7 @@ namespace ShipIt.Repositories
         CompanyDataModel GetCompany(string gcp);
         IEnumerable<CompanyDataModel> GetCompaniesByGcp(List<string> gcp);
         void AddCompanies(IEnumerable<Company> companies);
+        Dictionary<string, Company> GetCompanyDictionary(Dictionary<int, Product> productDictionary);
     }
 
     public class CompanyRepository : RepositoryBase, ICompanyRepository
@@ -58,6 +59,22 @@ namespace ShipIt.Repositories
             }
 
             base.RunTransaction(sql, parametersList);
+        }
+
+        public Dictionary<string, Company> GetCompanyDictionary(Dictionary<int, Product> productDictionary)
+        {
+            var companyGcp = new List<string>();
+            foreach (var product in productDictionary)
+            {
+                companyGcp.Add(product.Value.Gcp);
+            }
+            var companies = this.GetCompaniesByGcp(companyGcp);
+            var companyDictionary = new Dictionary<string, Company>();
+            foreach (var company in companies)
+            {
+                companyDictionary.Add(company.Gcp, new Company(company));
+            }
+            return companyDictionary;
         }
     }
 

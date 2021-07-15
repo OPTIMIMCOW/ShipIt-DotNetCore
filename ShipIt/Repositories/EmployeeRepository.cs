@@ -30,7 +30,6 @@ namespace ShipIt.Repositories
 
         public int GetCount()
         {
-
             using (IDbConnection connection = CreateSqlConnection())
             {
                 var command = connection.CreateCommand();
@@ -83,10 +82,9 @@ namespace ShipIt.Repositories
 
         public IEnumerable<EmployeeDataModel> GetEmployeesByWarehouseId(int warehouseId)
         {
-
             string sql = "SELECT name, w_id, role, ext FROM em WHERE w_id = @w_id";
             var parameter = new NpgsqlParameter("@w_id", warehouseId);
-            string noProductWithIdErrorMessage =
+            string noProductWithIdErrorMessage = 
                 string.Format("No employees found with Warehouse Id: {0}", warehouseId);
             return base.RunGetQuery(sql, reader => new EmployeeDataModel(reader), noProductWithIdErrorMessage, parameter);
         }
