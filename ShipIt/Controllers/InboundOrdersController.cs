@@ -38,29 +38,28 @@ namespace ShipIt.Controllers
 
             var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
 
-            var productIds = new List<string>();
-            foreach (var stock in allStock)
-            {
-                productIds.Add(stock.ProductId.ToString());
-            }
-            // IEnumerable<Product> products = _productRepository.GetProductsByGtin(productIds);
-            var products = _productRepository.GetProductsByIds(productIds);
-            var productDictionary = new Dictionary<int, Product>();
+            var productDictionary = _productRepository.GetProductDictionary(allStock);
 
-            foreach (var product in products)
+            var companyGcp = new List<string>();
+            foreach(var product in productDictionary)
             {
-                productDictionary.Add(product.Id, new Product(product)); 
+                companyGcp.Add(product.Value.Gcp);
+            }
+            var companies = _companyRepository.GetCompaniesByGcp(companyGcp);
+            var companyDictionary = new Dictionary<string, Company>();
+            foreach( var company in companies)
+            {
+                companyDictionary.Add(company.Gcp, new Company(company));
             }
             
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
-            
             foreach (var stock in allStock)
             {
                 Product product = productDictionary[stock.ProductId];
 
                 if (stock.held < product.LowerThreshold && !product.Discontinued)
                 {
-                    Company company = new Company(_companyRepository.GetCompany(product.Gcp));
+                    Company company = companyDictionary[product.Gcp];
 
                     var orderQuantity = Math.Max(product.LowerThreshold * 3 - stock.held, product.MinimumOrderQuantity);
 

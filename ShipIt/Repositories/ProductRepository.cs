@@ -19,6 +19,7 @@ namespace ShipIt.Repositories
         void AddProducts(IEnumerable<ProductDataModel> products);
         void DiscontinueProductByGtin(string gtin);
         double GetNumberOfTrucks(OutboundOrderRequestModel request, Dictionary<string, Product> products);
+        public Dictionary<int, Product> GetProductDictionary(IEnumerable<StockDataModel> allStock);
     }
 
     public class ProductRepository : RepositoryBase, IProductRepository
@@ -123,6 +124,21 @@ namespace ShipIt.Repositories
             }
             var numberOfTrucks = Math.Ceiling(totalWeightInKg / 2000.0);  
             return numberOfTrucks;
+        }
+        public Dictionary<int, Product> GetProductDictionary(IEnumerable<StockDataModel> allStock)
+        {
+            var productIds = new List<string>();
+            foreach (var stock in allStock)
+            {
+                productIds.Add(stock.ProductId.ToString());
+            }
+            var products = this.GetProductsByIds(productIds);
+            var productDictionary = new Dictionary<int, Product>();
+            foreach (var product in products)
+            {
+                productDictionary.Add(product.Id, new Product(product));
+            }
+            return productDictionary;
         }
     }
 }
