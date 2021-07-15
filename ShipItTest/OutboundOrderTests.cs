@@ -198,5 +198,29 @@ namespace ShipItTest
                 Assert.IsTrue(e.Message.Contains(GTIN));
             }
         }
+
+        [Test]
+        public void TestNumberOfTrucks()
+        {
+            onSetUp();
+            stockRepository.AddStock(WAREHOUSE_ID, new List<StockAlteration>() { new StockAlteration(productId, 10) });
+            var outboundOrder = new OutboundOrderRequestModel()
+            {
+                WarehouseId = WAREHOUSE_ID,
+                OrderLines = new List<OrderLine>()
+                {
+                    new OrderLine()
+                    {
+                        gtin = GTIN,
+                        quantity = 3
+                    }
+                }
+            };
+            var productDictionary = new Dictionary<string, Product>();
+            productDictionary.Add(GTIN, product);
+
+            var numOfTrucks = productRepository.GetNumberOfTrucks(outboundOrder, productDictionary);
+            Assert.IsTrue(numOfTrucks > 0);
+        }
     }
 }
