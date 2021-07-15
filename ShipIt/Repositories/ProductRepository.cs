@@ -15,7 +15,7 @@ namespace ShipIt.Repositories
         ProductDataModel GetProductByGtin(string gtin);
         IEnumerable<ProductDataModel> GetProductsByGtin(List<string> gtins);
         ProductDataModel GetProductById(int id);
-        IEnumerable<ProductDataModel> GetProductsByIds(List<string> ids);
+        IEnumerable<ProductDataModel> GetProductsByIds(List<int> ids);
         void AddProducts(IEnumerable<ProductDataModel> products);
         void DiscontinueProductByGtin(string gtin);
         double GetNumberOfTrucks(OutboundOrderRequestModel request, Dictionary<string, Product> products);
@@ -47,9 +47,9 @@ namespace ShipIt.Repositories
             return base.RunGetQuery(sql, reader => new ProductDataModel(reader), "No products found with given gtin ids", null);
         }
 
-         public IEnumerable<ProductDataModel> GetProductsByIds(List<string> ids){
-            string sql = String.Format("SELECT p_id, gtin_cd, gcp_cd, gtin_nm, m_g, l_th, ds, min_qt FROM gtin WHERE p_id IN ('{0}')", 
-                String.Join("','", ids));
+         public IEnumerable<ProductDataModel> GetProductsByIds(List<int> ids){
+            string sql = String.Format("SELECT p_id, gtin_cd, gcp_cd, gtin_nm, m_g, l_th, ds, min_qt FROM gtin WHERE p_id IN ({0})", 
+                String.Join(",", ids));
              return base.RunGetQuery(sql, reader => new ProductDataModel(reader), "No products found with given product ids", null);
          }
 
@@ -127,12 +127,15 @@ namespace ShipIt.Repositories
         }
         public Dictionary<int, Product> GetProductDictionary(IEnumerable<StockDataModel> allStock)
         {
-            var productIds = new List<string>();
+            var productIds = new List<int>();
+            
             foreach (var stock in allStock)
             {
-                productIds.Add(stock.ProductId.ToString());
+                productIds.Add(stock.ProductId);
             }
-            var products = this.GetProductsByIds(productIds);
+            
+            var products = GetProductsByIds(productIds);
+            
             var productDictionary = new Dictionary<int, Product>();
             foreach (var product in products)
             {

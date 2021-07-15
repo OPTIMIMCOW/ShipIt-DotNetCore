@@ -35,37 +35,40 @@ namespace ShipIt.Controllers
             var operationsManager = new Employee(_employeeRepository.GetOperationsManager(warehouseId));
 
             Log.Debug(String.Format("Found operations manager: {0}", operationsManager));
-
             var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
 
-            var productDictionary = _productRepository.GetProductDictionary(allStock);
-
-            var companyDictionary = _companyRepository.GetCompanyDictionary(productDictionary);
-           
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
-            
-            foreach (var stock in allStock)
+
+            if (allStock.Count() != 0)
             {
-                Product product = productDictionary[stock.ProductId];
 
-                if (stock.held < product.LowerThreshold && !product.Discontinued)
+                var productDictionary = _productRepository.GetProductDictionary(allStock);
+
+                var companyDictionary = _companyRepository.GetCompanyDictionary(productDictionary);
+
+                foreach (var stock in allStock)
                 {
-                    Company company = companyDictionary[product.Gcp];
+                    Product product = productDictionary[stock.ProductId];
 
-                    var orderQuantity = Math.Max(product.LowerThreshold * 3 - stock.held, product.MinimumOrderQuantity);
-
-                    if (!orderlinesByCompany.ContainsKey(company))
+                    if (stock.held < product.LowerThreshold && !product.Discontinued)
                     {
-                        orderlinesByCompany.Add(company, new List<InboundOrderLine>());
-                    }
+                        Company company = companyDictionary[product.Gcp];
 
-                    orderlinesByCompany[company].Add( 
-                        new InboundOrderLine()
+                        var orderQuantity = Math.Max(product.LowerThreshold * 3 - stock.held, product.MinimumOrderQuantity);
+
+                        if (!orderlinesByCompany.ContainsKey(company))
                         {
-                            gtin = product.Gtin,
-                            name = product.Name,
-                            quantity = orderQuantity
-                        });
+                            orderlinesByCompany.Add(company, new List<InboundOrderLine>());
+                        }
+
+                        orderlinesByCompany[company].Add(
+                            new InboundOrderLine()
+                            {
+                                gtin = product.Gtin,
+                                name = product.Name,
+                                quantity = orderQuantity
+                            });
+                    }
                 }
             }
 
