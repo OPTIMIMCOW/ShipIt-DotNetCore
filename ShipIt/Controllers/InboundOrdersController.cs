@@ -41,35 +41,11 @@ namespace ShipIt.Controllers
 
             if (allStock.Count() != 0)
             {
-
                 var productDictionary = _productRepository.GetProductDictionary(allStock);
 
                 var companyDictionary = _companyRepository.GetCompanyDictionary(productDictionary);
 
-                foreach (var stock in allStock)
-                {
-                    Product product = productDictionary[stock.ProductId];
-
-                    if (stock.held < product.LowerThreshold && !product.Discontinued)
-                    {
-                        Company company = companyDictionary[product.Gcp];
-
-                        var orderQuantity = Math.Max(product.LowerThreshold * 3 - stock.held, product.MinimumOrderQuantity);
-
-                        if (!orderlinesByCompany.ContainsKey(company))
-                        {
-                            orderlinesByCompany.Add(company, new List<InboundOrderLine>());
-                        }
-
-                        orderlinesByCompany[company].Add(
-                            new InboundOrderLine()
-                            {
-                                gtin = product.Gtin,
-                                name = product.Name,
-                                quantity = orderQuantity
-                            });
-                    }
-                }
+                orderlinesByCompany = _stockRepository.GetOrderLines(orderlinesByCompany, productDictionary, companyDictionary, allStock);
             }
 
             Log.Debug(String.Format("Constructed order lines: {0}", orderlinesByCompany));

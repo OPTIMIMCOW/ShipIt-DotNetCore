@@ -19,7 +19,7 @@ namespace ShipIt.Repositories
         void AddProducts(IEnumerable<ProductDataModel> products);
         void DiscontinueProductByGtin(string gtin);
         double GetNumberOfTrucks(OutboundOrderRequestModel request, Dictionary<string, Product> products);
-        public Dictionary<int, Product> GetProductDictionary(IEnumerable<StockDataModel> allStock);
+        Dictionary<int, Product> GetProductDictionary(IEnumerable<StockDataModel> allStock);
     }
 
     public class ProductRepository : RepositoryBase, IProductRepository

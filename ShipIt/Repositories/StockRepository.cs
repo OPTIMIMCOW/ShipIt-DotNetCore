@@ -17,6 +17,8 @@ namespace ShipIt.Repositories
         Dictionary<int, StockDataModel> GetStockByWarehouseAndProductIds(int warehouseId, List<int> productIds);
         void RemoveStock(int warehouseId, List<StockAlteration> lineItems);
         void AddStock(int warehouseId, List<StockAlteration> lineItems);
+        Dictionary<Company, List<InboundOrderLine>> GetOrderLines(Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany,
+            Dictionary<int, Product> productDictionary, Dictionary<string, Company> companyDictionary, IEnumerable<StockDataModel> allStock);
     }
 
     public class StockRepository : RepositoryBase, IStockRepository
@@ -118,5 +120,35 @@ namespace ShipIt.Repositories
 
             base.RunTransaction(sql, parametersList);
         }
-    }
+
+        public Dictionary<Company, List<InboundOrderLine>> GetOrderLines(Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany,
+            Dictionary<int, Product> productDictionary, Dictionary<string, Company> companyDictionary, IEnumerable<StockDataModel> allStock)
+        {
+            foreach (var stock in allStock)
+            {
+                Product product = productDictionary[stock.ProductId];
+
+                if (stock.held < product.LowerThreshold && !product.Discontinued)
+                {
+                    Company company = companyDictionary[product.Gcp];
+
+                    var orderQuantity = Math.Max(product.LowerThreshold * 3 - stock.held, product.MinimumOrderQuantity);
+
+                    if (!orderlinesByCompany.ContainsKey(company))
+                    {
+                        orderlinesByCompany.Add(company, new List<InboundOrderLine>());
+                    }
+
+                    orderlinesByCompany[company].Add(new InboundOrderLine()
+                       {
+                        gtin = product.Gtin,
+                        name = product.Name,
+                        quantity = orderQuantity
+                         });
+                }
+            }
+            return orderlinesByCompany;
+        }
+   }
+
 }
