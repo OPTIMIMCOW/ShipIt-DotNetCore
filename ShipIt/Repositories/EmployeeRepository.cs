@@ -74,10 +74,9 @@ namespace ShipIt.Repositories
 
         public IEnumerable<EmployeeDataModel> GetEmployeeByName(string name)
         {
-            string sql = "SELECT name, w_id, role, ext FROM em WHERE name = @name";
-            var parameter = new NpgsqlParameter("@name", name);
+            string sql = $"SELECT name, w_id, role, ext FROM em WHERE name = '{name}'";
             string noProductWithIdErrorMessage = string.Format("No employees found with name: {0}", name);
-            return base.RunGetQuery(sql, reader => new EmployeeDataModel(reader),noProductWithIdErrorMessage, parameter);
+            return base.RunGetQuery(sql, reader => new EmployeeDataModel(reader),noProductWithIdErrorMessage, null);
         }
 
         public IEnumerable<EmployeeDataModel> GetEmployeesByWarehouseId(int warehouseId)
